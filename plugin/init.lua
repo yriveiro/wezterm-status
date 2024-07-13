@@ -1,17 +1,14 @@
----@module 'wezterm'
----@module 'status'
-
----@class Config
+---@class Config: Wezterm
 local wezterm = require 'wezterm'
-
----@class Status
-local Status = require 'status.status'
 
 local M = {}
 
 ---@param config Config
 ---@param opts? Opts
 function M.apply_to_config(config, opts)
+  opts = opts or {}
+  config = config
+
   wezterm.log_info 'status plugin loaded'
 end
 
