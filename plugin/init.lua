@@ -54,34 +54,43 @@ local function battery_level()
 end
 
 ---@class WeztermStatusConfig
----@field mode {enabled: boolean}
+---@field mode {enabled: boolean, modes: table}
 ---@field battery {enabled: boolean}
 ---@field hostname {enabled: boolean}
+---@field cwd {enabled: boolean}
+---@field date {enabled: boolean, format: string}
 local config = {
-  mode = {
-    enabled = true,
-    index = 0,
-    callback = nil,
+  ui = {
+    separators = {
+      arrow_solid_left = ' \u{e0b0}',
+      arrow_solid_right = ' \u{e0b2}',
+      arrow_thin_left = ' \u{e0b1}',
+      arrow_thin_right = ' \u{e0b3}',
+    },
   },
-  battery = {
-    enabled = true,
-    index = 1,
-    callback = nil,
-  },
-  hostname = {
-    enabled = true,
-    index = 2,
-    callback = nil,
-  },
-  cwd = {
-    enabled = true,
-    index = 3,
-    callback = nil,
-  },
-  date = {
-    enabled = true,
-    index = 4,
-    callback = nil,
+  cells = {
+    mode = {
+      enabled = true,
+      modes = {
+        normal = ' ' .. wezterm.nerdfonts.cod_home,
+        copy_mode = ' ' .. wezterm.nerdfonts.cod_copy,
+        search_mode = ' ' .. wezterm.nerdfonts.cod_search,
+      },
+    },
+    battery = {
+      enabled = true,
+    },
+    hostname = {
+      enabled = true,
+    },
+    cwd = {
+      enabled = true,
+    },
+    date = {
+      enabled = true,
+      icon = wezterm.nerdfonts.md_clock_time_three_outline,
+      format = '%H:%M:%S',
+    },
   },
 }
 
@@ -140,10 +149,8 @@ function Cells:push(background, foreground, text, attributes)
   if attributes then
     for _, attr in ipairs(attributes) do
       if self.attrs[attr] then
-        local t = { Attribute = {} }
         for k, v in pairs(self.attrs[attr]) do
-          t.Attribute[k] = v
-          insert(self, t)
+          insert(self, { Attribute = { [k] = v } })
         end
       else
         wezterm.log_error("attribute '" .. attr .. "' is non-existent")
@@ -172,24 +179,6 @@ end
 ---@field cells table all cells of the status bar
 local M = {}
 
-M.arrow_solid_left = ''
-M.arrow_thin_left = ''
-M.arrow_solid_right = ''
-M.arrow_thin_right = ''
-
-local modes = {
-  normal = ' ' .. wezterm.nerdfonts.cod_home,
-  copy_mode = ' ' .. wezterm.nerdfonts.cod_copy,
-  search_mode = ' ' .. wezterm.nerdfonts.cod_search,
-  -- window_mode = { text = ' 󱂬 WINDOW ', bg = colors[6], pad = 7 },
-  -- font_mode = {
-  --   text = ' 󰛖 FONT ',
-  --   bg = colors[6] or colors[8],
-  --   pad = 7,
-  -- },
-  -- lock_mode = { text = '  LOCK ', bg = colors[8], pad = 0 },
-}
-
 ---@param wezterm_config Config
 ---@param opts? WeztermStatusConfig
 function M.apply_to_config(wezterm_config, opts)
@@ -201,99 +190,92 @@ wezterm.on('update-status', function(window, pane)
   local palette = window:effective_config().resolved_palette.tab_bar.active_tab
   local cells = Cells:new()
 
-  cells:push(palette.fg_color, palette.bg_color, M.arrow_solid_right)
+  cells:push(palette.fg_color, palette.bg_color, config.ui.separators.arrow_solid_right)
 
-  if config.mode.enabled then
+  if config.cells.mode.enabled then
     local kt = window:active_key_table()
 
     if not kt then
       cells:push(
         palette.bg_color,
         palette.fg_color,
-        ' ' .. wezterm.nerdfonts.cod_home,
+        ' ' .. wezterm.nerdfonts.cod_home .. config.ui.separators.arrow_thin_right,
         { 'Bold' }
       )
     end
 
-    if modes[kt] then
-      cells:push(palette.bg_color, palette.fg_color, modes[kt])
+    if config.cells.mode.modes[kt] then
+      cells:push(
+        palette.bg_color,
+        palette.fg_color,
+        config.cells.mode.modes[kt] .. config.ui.separators.arrow_thin_right
+      )
     end
-
-    cells:push(palette.bg_color, palette.fg_color, ' ' .. M.arrow_thin_right)
   end
 
-  if config.battery.enabled then
-    cells:push(palette.bg_color, palette.fg_color, battery_level())
-    cells:push(palette.bg_color, palette.fg_color, ' ' .. M.arrow_thin_right)
+  if config.cells.battery.enabled then
+    cells:push(
+      palette.bg_color,
+      palette.fg_color,
+      battery_level() .. config.ui.separators.arrow_thin_right
+    )
   end
 
-  --
-  -- if M.config.hostname.enabled then
-  --   local uri = pane:get_current_working_dir()
-  --
-  --   if uri then
-  --     if type(uri) == 'userdata' then
-  --       local hostname = uri.host or wezterm.hostname()
-  --
-  --       M.push(palette.bg_color, palette.fg_color, ' ' .. hostname)
-  --       M.push(palette.bg_color, palette.fg_color, ' ' .. M.arrow_thin_right)
-  --     else
-  --       wezterm.log_warn "this version of Wezterm doesn't support URL objects"
-  --     end
-  --   end
-  -- end
-  --
-  -- if M.config.cwd.enabled then
-  --   ---@type userdata|string
-  --   local uri = pane:get_current_working_dir()
-  --
-  --   if uri then
-  --     local cwd = ''
-  --
-  --     if type(uri) == 'userdata' then
-  --       M.push(palette.bg_color, palette.fg_color, ' ' .. uri.file_path)
-  --       M.push(palette.bg_color, palette.fg_color, ' ' .. M.arrow_thin_right)
-  --     else
-  --       wezterm.log_warn "this version of Wezterm doesn't support URL objects"
-  --     end
-  --   end
-  -- end
-  --
+  if config.cells.hostname.enabled then
+    local uri = pane:get_current_working_dir()
 
-  -- wezterm.log_info(cells:draw())
+    if uri then
+      if type(uri) == 'userdata' then
+        ---Uri is userdata type, will never work with diagnostic type checking.
+        ---@diagnostic disable-next-line: undefined-field
+        local hostname = uri.host or wezterm.hostname()
+
+        cells:push(
+          palette.bg_color,
+          palette.fg_color,
+          ' ' .. hostname .. config.ui.separators.arrow_thin_right
+        )
+      else
+        wezterm.log_warn "this version of Wezterm doesn't support URL objects"
+      end
+    end
+  end
+
+  if config.cells.cwd.enabled then
+    ---Uri is userdata type, will never work with diagnostic type checking.
+    ---@diagnostic disable-next-line: undefined-field
+    local uri = pane:get_current_working_dir()
+
+    if uri then
+      if type(uri) == 'userdata' then
+        cells:push(
+          palette.bg_color,
+          palette.fg_color,
+          ' '
+            .. uri.file_path ---@diagnostic disable-line: undefined-field
+            .. config.ui.separators.arrow_thin_right
+        )
+      else
+        wezterm.log_warn "this version of Wezterm doesn't support URL objects"
+      end
+    end
+  end
+
+  if config.cells.date.enabled then
+    cells:push(
+      palette.bg_color,
+      palette.fg_color,
+      ' '
+        .. config.cells.date.icon
+        .. ' '
+        .. wezterm.strftime(config.cells.date.format)
+        .. config.ui.separators.arrow_thin_right
+    )
+  end
 
   window:set_right_status(wezterm.format(cells:draw()))
 
   cells:clear()
 end)
-
-------Pushes a section to `M.cells` with specified background color, foreground color, text, and optional attributes.
-------```lua
-------M.push("red", "blue", "Hello World", {"bold", "italic"})
-------```
-------@param background string The background color to be applied.
-------@param foreground string The foreground color to be applied.
-------@param text string The text to be inserted.
-------@param attributes? table Optional. A table of attributes to be applied.
----function M.push(background, foreground, text, attributes)
----  if attributes then
----    for _, attr in ipairs(attributes) do
----      if cell_attrs[attr] then
----        local t = { Attribute = {} }
----        for k, v in pairs(cell_attrs[attr]) do
----          t.Attribute[k] = v
----          insert(M.cells, t)
----        end
----      else
----        wezterm.log_error("attribute '" .. attr .. "' is non-existent")
----      end
----    end
----  end
----
----  insert(M.cells, { Background = { Color = background } })
----  insert(M.cells, { Foreground = { Color = foreground } })
----  insert(M.cells, { Text = text })
----  insert(M.cells, 'ResetAttributes')
----end
 
 return M
