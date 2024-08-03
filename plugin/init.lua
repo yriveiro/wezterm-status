@@ -3,7 +3,11 @@ local insert = table.insert
 ---@class Config: Wezterm
 local wezterm = require 'wezterm'
 
+--- Merges two tables recursively
 ---@package
+---@param t1 table The first table to merge into
+---@param t2 table The second table to merge from
+---@return table The merged table
 local function tableMerge(t1, t2)
   for k, v in pairs(t2) do
     if type(v) == 'table' then
@@ -19,16 +23,15 @@ local function tableMerge(t1, t2)
   return t1
 end
 
----Returns the battery icon based on the battery level
+--- Returns the battery icon based on the battery level
 ---@package
----@return string string with the battery icon corresponding to the bucket
+---@return string The battery icon corresponding to the bucket
 local function battery_level()
   ---@type BatteryInfo
   local battery_info = wezterm.battery_info()
 
   if battery_info == nil or #battery_info == 0 then
     wezterm.log_error 'Battery info is unknown'
-
     return ' ' .. wezterm.nerdfonts.fa_question_circle
   end
 
@@ -36,7 +39,6 @@ local function battery_level()
 
   if level < 0.0 or level > 1.0 then
     wezterm.log_error 'Battery level must be between 0.0 and 1.0'
-
     return ' ' .. wezterm.nerdfonts.fa_question_circle
   end
 
@@ -116,7 +118,7 @@ local config = {
 ---@field clear fun(self: WeztermStatusCells): nil Clears Cells instance.
 local Cells = {}
 
----Creates a new Cells instance.
+--- Creates a new Cells instance.
 ---@return WeztermStatusCells
 ---@package
 ---@nodiscard
@@ -144,7 +146,12 @@ function Cells:new()
   })
 end
 
+--- Pushes a cell with specified background color, foreground color, text, and optional attributes.
 ---@package
+---@param background string The background color
+---@param foreground string The foreground color
+---@param text string The text to display
+---@param attributes string[]? Optional attributes for the text
 function Cells:push(background, foreground, text, attributes)
   if attributes then
     for _, attr in ipairs(attributes) do
@@ -164,21 +171,25 @@ function Cells:push(background, foreground, text, attributes)
   insert(self, 'ResetAttributes')
 end
 
+--- Returns a FormatItem array for wezterm.format consume.
 ---@package
+---@return FormatItem[] The formatted items
 function Cells:draw()
   return self.cells
 end
 
+--- Clears the Cells instance.
 ---@package
 function Cells:clear()
   self.cells = {}
 end
 
 ---@class WeztermStatus
----@field protected config WeztermStatusConfig internal plugin config
----@field cells table all cells of the status bar
+---@field protected config WeztermStatusConfig Internal plugin config
+---@field cells table All cells of the status bar
 local M = {}
 
+--- Applies configuration to Wezterm
 ---@param wezterm_config Config
 ---@param opts? WeztermStatusConfig
 function M.apply_to_config(wezterm_config, opts)
@@ -226,7 +237,7 @@ wezterm.on('update-status', function(window, pane)
 
     if uri then
       if type(uri) == 'userdata' then
-        ---Uri is userdata type, will never work with diagnostic type checking.
+        --- Uri is userdata type, will never work with diagnostic type checking.
         ---@diagnostic disable-next-line: undefined-field
         local hostname = uri.host or wezterm.hostname()
 
@@ -242,7 +253,7 @@ wezterm.on('update-status', function(window, pane)
   end
 
   if config.cells.cwd.enabled then
-    ---Uri is userdata type, will never work with diagnostic type checking.
+    --- Uri is userdata type, will never work with diagnostic type checking.
     ---@diagnostic disable-next-line: undefined-field
     local uri = pane:get_current_working_dir()
 
@@ -274,7 +285,6 @@ wezterm.on('update-status', function(window, pane)
   end
 
   window:set_right_status(wezterm.format(cells:draw()))
-
   cells:clear()
 end)
 
