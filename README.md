@@ -54,7 +54,8 @@ In this example, we are configuring the format date applied.
       .require('https://github.com/yriveiro/wezterm-status')
       .apply_to_config(config, { cells = { date = {
         format = '%H:%M',
-      } } })```
+      } } })
+```
 
 # Available configurations
 
