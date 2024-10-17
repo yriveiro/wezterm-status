@@ -1,4 +1,5 @@
 local insert = table.insert
+local string = string
 
 ---@class Config: Wezterm
 local wezterm = require 'wezterm'
@@ -59,7 +60,7 @@ end
 ---@field mode {enabled: boolean, modes: table}
 ---@field battery {enabled: boolean}
 ---@field hostname {enabled: boolean}
----@field cwd {enabled: boolean}
+---@field cwd {enabled: boolean, tilde_prefix: boolean}
 ---@field date {enabled: boolean, format: string}
 local config = {
   ui = {
@@ -87,6 +88,7 @@ local config = {
     },
     cwd = {
       enabled = true,
+      tilde_prefix = true,
     },
     date = {
       enabled = true,
@@ -253,18 +255,21 @@ wezterm.on('update-status', function(window, pane)
   end
 
   if config.cells.cwd.enabled then
-    --- Uri is userdata type, will never work with diagnostic type checking.
-    ---@diagnostic disable-next-line: undefined-field
+    ---@type string|nil
     local uri = pane:get_current_working_dir()
 
     if uri then
       if type(uri) == 'userdata' then
+        local path = uri.file_path ---@diagnostic disable-line
+
+        if config.cells.cwd.tilde_prefix then
+          path = path:gsub(os.getenv 'HOME', '~')
+        end
+
         cells:push(
           palette.bg_color,
           palette.fg_color,
-          ' '
-            .. uri.file_path ---@diagnostic disable-line: undefined-field
-            .. config.ui.separators.arrow_thin_right
+          string.format(' %s%s', path, config.ui.separators.arrow_thin_right)
         )
       else
         wezterm.log_warn "this version of Wezterm doesn't support URL objects"
