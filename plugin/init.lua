@@ -43,14 +43,16 @@ local function battery_level()
     return ' ' .. wezterm.nerdfonts.fa_question_circle
   end
 
-  local bucket = math.ceil(level * 4)
+  local icons = {
+    [0.25] = wezterm.nerdfonts.fa_battery_empty,
+    [0.5] = wezterm.nerdfonts.fa_battery_quarter,
+    [0.75] = wezterm.nerdfonts.fa_battery_three_quarters,
+  }
 
-  if bucket == 1 then
-    return ' ' .. wezterm.nerdfonts.fa_battery_empty
-  elseif bucket == 2 then
-    return ' ' .. wezterm.nerdfonts.fa_battery_quarter
-  elseif bucket == 3 then
-    return ' ' .. wezterm.nerdfonts.fa_battery_three_quarters
+  for threshold, icon in pairs(icons) do
+    if level <= threshold then
+      return ' ' .. icon
+    end
   end
 
   return ' ' .. wezterm.nerdfonts.fa_battery_full
