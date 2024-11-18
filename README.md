@@ -15,106 +15,155 @@ displayed in a customizable status bar.
 
 # Installation
 
-This project works with the native plugin system provided by WezTerm.
-
-Modify your WezTerm configuration file (~/.config/wezterm/wezterm.lua) to include
-the status bar script:
-
 ```lua
+local wezterm = require 'wezterm'
+local config = wezterm.config_builder()
 
-    local wezterm = require 'wezterm'
-    local config = wezterm.config_builder()
-
-    ...
-
-    wezterm.plugin
-      .require('https://github.com/yriveiro/wezterm-status')
-      .apply_to_config(config)
+wezterm.plugin
+  .require('https://github.com/yriveiro/wezterm-status')
+  .apply_to_config(config)
 ```
 
 # Setup
 
-Once configured, the status bar will automatically update with the relevant
-information when WezTerm is running. You can modify the configuration to
-suit your needs, enabling or disabling different cells as required.
-
-To customize the plugin, the method `apply_to_config` accepts a second argument
-for the plugin options.
-
-In this example, we are configuring the format date applied.
+Customize the plugin with the `apply_to_config` method's second argument:
 
 ```lua
-
-    local wezterm = require 'wezterm'
-    local config = wezterm.config_builder()
-
-    ...
-
-    wezterm.plugin
-      .require('https://github.com/yriveiro/wezterm-status')
-      .apply_to_config(config, { cells = { date = {
-        format = '%H:%M',
-      } } })
+wezterm.plugin
+  .require('https://github.com/yriveiro/wezterm-status')
+  .apply_to_config(config, {
+    cells = {
+      battery = { enabled = false },
+      date = { format = '%H:%M' }
+    }
+  })
 ```
 
 # Available configurations
 
-- *mode*: Configures the mode indicator.
-- *battery*: Enables or disables the battery status.
-- *hostname*: Enables or disables the hostname cell.
-- *cwd*: Enables or disables the current working directory cell.
-- *date*: Configures the date/time cell, including format.
+## UI Section
 
-The current defaults are:
+Controls visual elements and separators.
+
+### Separators
 
 ```lua
-
-local config = {
-  ui = {
-    separators = {
-      arrow_solid_left = ' \u{e0b0}',
-      arrow_solid_right = ' \u{e0b2}',
-      arrow_thin_left = ' \u{e0b1}',
-      arrow_thin_right = ' \u{e0b3}',
-    },
-  },
-  cells = {
-    mode = {
-      enabled = true,
-      modes = {
-        normal = ' ' .. wezterm.nerdfonts.cod_home,
-        copy_mode = ' ' .. wezterm.nerdfonts.cod_copy,
-        search_mode = ' ' .. wezterm.nerdfonts.cod_search,
-      },
-    },
-    battery = {
-      enabled = true,
-    },
-    hostname = {
-      enabled = true,
-    },
-    cwd = {
-      enabled = true,
-    },
-    date = {
-      enabled = true,
-      icon = wezterm.nerdfonts.md_clock_time_three_outline,
-      format = '%Y-%m-%d %H:%M:%S',
-    },
-  },
+ui.separators = {
+  -- Powerline-style arrows
+  arrow_solid_left = '\u{e0b0}',
+  arrow_solid_right = '\u{e0b2}',
+  arrow_thin_left = '\u{e0b1}',
+  arrow_thin_right = '\u{e0b3}',
 }
 ```
 
-# Usage
+## Cells Section
 
-Once configured, the status bar will automatically update with the relevant
-information when WezTerm is running. You can modify the configuration to
-suit your needs, enabling or disabling different cells as required.
+### Mode Indicator
+
+```lua
+cells.mode = {
+  -- Enable mode display
+  enabled = true,
+  -- Map modes to icons
+  modes = {
+    normal = ' ' .. wezterm.nerdfonts.cod_home,
+    copy_mode = ' ' .. wezterm.nerdfonts.cod_copy,
+    search_mode = ' ' .. wezterm.nerdfonts.cod_search,
+  }
+}
+```
+
+### Battery Indicator
+
+```lua
+cells.battery = {
+  -- Enable battery status
+  enabled = true
+}
+```
+
+Shows dynamic icons based on charge level:
+
+- Empty: ≤ 25%
+- Quarter: ≤ 50%
+- Three Quarters: ≤ 75%
+- Full: > 75%
+
+### Hostname Display
+
+```lua
+cells.hostname = {
+  -- Enable hostname
+  enabled = true
+}
+```
+
+### Current Working Directory
+
+```lua
+cells.cwd = {
+  -- Enable CWD display
+  enabled = true,
+  -- Replace $HOME with ~
+  tilde_prefix = true,
+  -- Path aliases for shortening
+  path_aliases = {
+    -- Replace long development path with an icon
+    { pattern = "/home/user/development", replacement = "🛠️" },
+    -- Use git icon for repositories
+    { pattern = "/home/user/repos", replacement = "" },
+    -- Docker projects
+    { pattern = "/home/user/docker", replacement = "🐳" },
+    -- Kubernetes configuration
+    { pattern = "/home/user/.kube", replacement = "☸️" }
+  }
+}
+```
+
+The status bar supports path aliases to create more compact and readable directory
+paths. This feature is particularly useful for frequently accessed directories or
+deep nested paths.
+
+With this configuration path will be aliased to
+
+```sh
+/home/user/development/project → 🛠️/project
+/home/user/repos/my-app → /my-app
+/home/user/docker/compose → 🐳/compose
+```
+
+This feature helps maintain a clean status bar while preserving path context through
+meaningful icons or abbreviations.
+
+### Date/Time Display
+
+```lua
+cells.date = {
+  -- Enable timestamp
+  enabled = true,
+  -- Clock icon
+  icon = wezterm.nerdfonts.md_clock_time_three_outline,
+  -- Time format (strftime)
+  format = '%H:%M:%S'
+}
+```
+
+# Cell Formatting
+
+Available text attributes:
+
+- `Bold`: Bold intensity
+- `Curly`/`Dashed`/`Dotted`/`Double`/`Single`: Underline styles
+- `Half`: Half intensity
+- `Italic`/`NoItalic`: Italic control
+- `NoUnderline`: Remove underline
+- `Normal`: Normal intensity
 
 # Contributing
 
-Contributions are welcome! Please open an issue or submit a pull request with your improvements.
+Open issues or submit pull requests with improvements.
 
 # License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+MIT License
