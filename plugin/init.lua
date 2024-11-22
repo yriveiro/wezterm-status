@@ -1,13 +1,13 @@
 ---@meta
 
---[[ 
+--[[
 @module 'wezterm-status'
 @description A module for configuring and customizing Wezterm's status bar
 
 This module provides functionality to:
 - Configure status bar cells with various information displays
 - Show battery status with dynamic icons
-- Display current working directory
+- Display the current working directory
 - Show active mode indicators
 - Show current time and hostname
 - Apply consistent styling across status elements
@@ -56,6 +56,9 @@ local strftime = wezterm.strftime
 local hostname = wezterm.hostname
 local log_warn = wezterm.log_warn
 local nerdfonts = wezterm.nerdfonts
+
+local HOME = get_env 'HOME' or ''
+local ESCAPED_HOME = gsub(HOME, '([^%w])', '%%%1')
 
 --- Merges two tables recursively with depth tracking to prevent stack overflow
 ---@param t1 table The first table to merge into
@@ -304,6 +307,10 @@ function M.apply_to_config(wezterm_config, opts)
   config = tableMerge(config, opts or {})
 end
 
+local function escape_pattern(text)
+  return gsub(text, '([^%w])', '%%%1')
+end
+
 --- Applies configured path aliases to a path string
 ---@param path string The original path
 ---@param aliases PathAliasConfig[] Array of path alias configurations
@@ -315,7 +322,7 @@ local function apply_path_aliases(path, aliases)
 
   for _, alias in ipairs(aliases) do
     if alias.pattern and alias.replacement then
-      path = gsub(path, alias.pattern, alias.replacement)
+      path = gsub(path, escape_pattern(alias.pattern), alias.replacement)
     end
   end
 
@@ -362,7 +369,7 @@ wezterm.on('update-status', function(window, pane)
       local path = uri.file_path
 
       if config_cells.cwd.tilde_prefix then
-        path = gsub(path, get_env 'HOME', '~')
+        path = gsub(path, HOME, '~')
       end
 
       path = apply_path_aliases(path, config_cells.cwd.path_aliases)
