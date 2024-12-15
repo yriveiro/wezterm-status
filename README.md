@@ -136,6 +136,16 @@ With this configuration path will be aliased to
 This feature helps maintain a clean status bar while preserving path context through
 meaningful icons or abbreviations.
 
+### Wezterm Workspace
+
+```lua
+cells.workspace = {
+  -- Enable Wezterm Workspace
+  enabled = true,
+  -- Clock icon
+  icon = wezterm.nerdfonts.md_television_guide,
+}
+
 ### Date/Time Display
 
 ```lua

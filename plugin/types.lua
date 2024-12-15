@@ -13,6 +13,7 @@
 ---@field hostname HostnameConfig Hostname display configuration
 ---@field cwd CwdConfig Current working directory configuration
 ---@field date DateConfig Date and time display configuration
+---@field workspace WorkspaceConfig Wezterm workspace configuration
 
 ---@class ModeConfig
 ---@field enabled boolean Whether to show mode indicator
@@ -38,6 +39,10 @@
 ---@class PathAliasConfig
 ---@field pattern string Pattern to match in the path
 ---@field replacement string Text to replace the matched pattern with
+
+---@class WorkspaceConfig
+---@field enabled boolean Whether to show workspace or not
+---@field icon string Icon to show before time
 
 ---@class WeztermStatusConfig
 ---@field ui WeztermUiConfig UI-related configuration
