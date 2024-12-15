@@ -1,5 +1,11 @@
 # All notable changes to this project will be documented in this file
 
+## [0.2.1] - 2024-12-15
+
+### Added
+
+- New component to show the current Wezterm workspace.
+
 ## [0.2.0] - 2024-11-18
 
 ### Added

@@ -112,6 +112,10 @@ local config = {
       icon = wezterm.nerdfonts.md_clock_time_three_outline,
       format = '%H:%M:%S',
     },
+    workspace = {
+      enabled = false,
+      icon = wezterm.nerdfonts.md_television_guide,
+    },
   },
 }
 
@@ -163,7 +167,6 @@ wezterm.on('update-status', function(window, pane)
     if config_cells.hostname.enabled then
       cells:push(bg, fg, ' ' .. (uri.host --[[@as CWD]] or hostname()) .. thin_right)
     end
-
     if config_cells.cwd.enabled then
       cells:push(
         bg,
@@ -175,6 +178,14 @@ wezterm.on('update-status', function(window, pane)
     end
   elseif uri then
     log_warn "this version of Wezterm doesn't support URL objects"
+  end
+
+  if config_cells.workspace.enabled then
+    cells:push(
+      bg,
+      fg,
+      ' ' .. config_cells.workspace.icon .. ' ' .. window:active_workspace() .. thin_right
+    )
   end
 
   if config_cells.date.enabled then
