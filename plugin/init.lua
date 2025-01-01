@@ -61,6 +61,7 @@ package.path = package.path
 local Battery = require 'components.battery'
 local CWD = require 'components.cwd'
 local Cells = require 'cells'
+local K8S = require 'components.k8s'
 local Utils = require 'utils'
 
 local gsub = string.gsub
@@ -115,6 +116,10 @@ local config = {
     workspace = {
       enabled = false,
       icon = wezterm.nerdfonts.md_television_guide,
+    },
+    k8s_context = {
+      enabled = false,
+      kubectl_path = K8S.find_kubectl(),
     },
   },
 }
@@ -185,6 +190,14 @@ wezterm.on('update-status', function(window, pane)
       bg,
       fg,
       ' ' .. config_cells.workspace.icon .. ' ' .. window:active_workspace() .. thin_right
+    )
+  end
+
+  if config_cells.k8s_context.enabled then
+    cells:push(
+      bg,
+      fg,
+      ' ' .. K8S.get_current_context(config_cells.k8s_context.kubectl_path) .. thin_right
     )
   end
 

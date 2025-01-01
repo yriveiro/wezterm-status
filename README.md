@@ -159,6 +159,19 @@ cells.date = {
 }
 ```
 
+### Kubernetes Current Context
+
+The component will try to guess the path but the process is prone to error, if
+the current logic doesn't find the binary you can pass it on `kubectl_path`
+
+```lua
+cells.k8s_context = {
+  enabled = true,
+  -- If the current autodiscovery logic doesn't work add kubectl_path
+  kubectl_path = '/usr/local/bin/kubectl'
+}
+```
+
 # Cell Formatting
 
 Available text attributes:
