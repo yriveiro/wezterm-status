@@ -193,7 +193,7 @@ wezterm.on('update-status', function(window, pane)
   end
 
   if config_cells.k8s_context.enabled then
-    if K8S.kubectl_exists then
+    if K8S.kubectl_exists() then
       cells:push(bg, fg, ' ' .. K8S.get_current_context())
     else
       log_warn 'kubectl is not in PATH, k8s context not rendered'
