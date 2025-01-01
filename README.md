@@ -145,6 +145,7 @@ cells.workspace = {
   -- Clock icon
   icon = wezterm.nerdfonts.md_television_guide,
 }
+```
 
 ### Date/Time Display
 
