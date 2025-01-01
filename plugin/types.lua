@@ -47,6 +47,7 @@
 
 ---@class K8SContextConfig
 ---@field enabled boolean Whether to show context or not
+---@field kubectl_path string|nil The kubectl path
 
 ---@class WeztermStatusConfig
 ---@field ui WeztermUiConfig UI-related configuration

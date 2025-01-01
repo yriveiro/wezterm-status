@@ -119,6 +119,7 @@ local config = {
     },
     k8s_context = {
       enabled = false,
+      kubectl_path = K8S.find_kubectl(),
     },
   },
 }
@@ -193,11 +194,11 @@ wezterm.on('update-status', function(window, pane)
   end
 
   if config_cells.k8s_context.enabled then
-    if K8S.kubectl_exists() then
-      cells:push(bg, fg, ' ' .. K8S.get_current_context())
-    else
-      log_warn 'kubectl is not in PATH, k8s context not rendered'
-    end
+    cells:push(
+      bg,
+      fg,
+      ' ' .. K8S.get_current_context(config_cells.k8s_context.kubectl_path) .. thin_right
+    )
   end
 
   if config_cells.date.enabled then

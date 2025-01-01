@@ -3,39 +3,51 @@ local nerdfonts = wezterm.nerdfonts
 
 local M = {}
 
---- Checks if kubectl command-line tool exists in system PATH
----@return boolean true if kubectl exists, false if it doesn't
-function M.kubectl_exists()
-  -- Early check for Windows vs Unix-like systems
-  local isWindows = package.config:sub(1, 1) == '\\'
-  local command = isWindows and 'where ' or 'which '
+---Check if the `kubectl` binary exists in typical paths for the current platform.
+---This function guesses the possible locations of the `kubectl` binary based on
+---the operating system (Windows, Linux, macOS).
+---If `kubectl` is not found in any of the guessed paths, it returns `nil`.
+---@return string|nil The path to the `kubectl` binary if found, otherwise `nil`.
+function M.find_kubectl()
+  local os_name = package.config:sub(1, 1) == '\\' and 'windows' or 'unix'
 
-  -- Try to execute the command
-  local handle, err = io.popen(command .. 'kubectl')
+  local paths = {}
 
-  if not handle then
-    -- If we couldn't even execute the command, return error
-    return false
+  if os_name == 'windows' then
+    paths = {
+      'C:\\Program Files\\Kubernetes\\kubectl.exe',
+      'C:\\Program Files (x86)\\Kubernetes\\kubectl.exe',
+      'C:\\Windows\\System32\\kubectl.exe',
+      'C:\\kubectl.exe',
+    }
+  else
+    paths = {
+      '/usr/local/bin/kubectl',
+      '/usr/bin/kubectl',
+      '/bin/kubectl',
+      '/opt/homebrew/bin/kubectl',
+    }
   end
 
-  -- Read output and close handle
-  local result = handle:read '*a'
-  local success, _, code = handle:close()
+  for _, path in ipairs(paths) do
+    local file = io.open(path, 'r')
+    if file then
+      file:close()
+      return path
+    end
+  end
 
-  -- Ensure we return an integer (0 for success, 1 for failure)
-  -- If code is nil or non-zero, return 1
-  return code == 0 and true or false
+  return nil
 end
 
---- Gets the current kubectl context
----@return string|nil current_context The current kubectl context, nil if command fails
----@return integer exit_code The command exit code (0 for success, non-zero for failure)
-function M.get_current_context()
-  -- Execute kubectl command
-  local handle = io.popen 'kubectl config current-context 2>&1'
-
+---Get the current Kubernetes context using `kubectl`.
+---Executes the `kubectl config current-context` command and returns the current Kubernetes context.
+---@param kubectl_path string The full path to the `kubectl` binary.
+---@return string The current Kubernetes context prefixed with a Kubernetes icon (from Nerd Fonts), or an empty string if the command fails.
+function M.get_current_context(kubectl_path)
+  local handle = io.popen(kubectl_path .. ' config current-context 2>&1')
   if not handle then
-    return nil, 1
+    return ''
   end
 
   -- Read the output
@@ -47,8 +59,10 @@ function M.get_current_context()
 
   -- Return nil if command failed
   if code ~= 0 then
-    return nil, code
+    return ''
   end
 
-  return nerdfonts.md_kubernetes .. ':' .. result, code
+  return code == 0 and nerdfonts.md_kubernetes .. ' ' .. result or ''
 end
+
+return M
