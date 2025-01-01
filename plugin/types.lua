@@ -14,6 +14,7 @@
 ---@field cwd CwdConfig Current working directory configuration
 ---@field date DateConfig Date and time display configuration
 ---@field workspace WorkspaceConfig Wezterm workspace configuration
+---@field k8s_context K8SContextConfig Kubernetes context configuration
 
 ---@class ModeConfig
 ---@field enabled boolean Whether to show mode indicator
@@ -43,6 +44,9 @@
 ---@class WorkspaceConfig
 ---@field enabled boolean Whether to show workspace or not
 ---@field icon string Icon to show before time
+
+---@class K8SContextConfig
+---@field enabled boolean Whether to show context or not
 
 ---@class WeztermStatusConfig
 ---@field ui WeztermUiConfig UI-related configuration
