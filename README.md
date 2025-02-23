@@ -47,10 +47,6 @@ Controls visual elements and separators.
 
 ### Theme
 
-The plugin will try to use wezterm.config.colors.tab_bar if it's defined, if
-if it's not, will try config.ui.theme defined the plugin, in case none of both
-are defined, will use a fallback theme.
-
 > [!NOTE]
 > The plugin will first try to use wezterm.config.colors.tab_bar if it is defined.
 > If not, it will check config.ui.theme from the plugin's configuration. If neither
