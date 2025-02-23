@@ -134,10 +134,17 @@ local M = {}
 ---@param opts? WeztermStatusConfig Optional configuration overrides
 function M.apply_to_config(wezterm_config, opts)
   config = Utils.table_merge(config, opts or {})
+end
 
-  local user_active_tab = wezterm_config.colors
-    and wezterm_config.colors.tab_bar
-    and wezterm_config.colors.tab_bar.active_tab
+-- Register status bar update handler
+wezterm.on('update-status', function(window, pane)
+  local cells = Cells:new()
+  local config_cells = config.cells
+  local separators = config.ui.separators
+  local thin_right = separators.arrow_thin_right
+
+  local palette = window:effective_config().resolved_palette
+  local user_active_tab = palette.tab_bar and palette.tab_bar.active_tab
 
   config.ui.theme = user_active_tab
     or config.ui.theme
@@ -149,23 +156,6 @@ function M.apply_to_config(wezterm_config, opts)
       italic = false,
       strikethrough = false,
     }
-
-  if not user_active_tab then
-    wezterm.log_warn(
-      "Wezterm-Status: No 'config.colors.tab_bar.active_tab' detected. "
-        .. "Falling back to the plugin's internal theme. "
-        .. "You can customize it via plugin configuration 'config.ui.theme'."
-        .. 'more info: https://github.com/yriveiro/wezterm-status/tree/main?tab=readme-ov-file#setup'
-    )
-  end
-end
-
--- Register status bar update handler
-wezterm.on('update-status', function(window, pane)
-  local cells = Cells:new()
-  local config_cells = config.cells
-  local separators = config.ui.separators
-  local thin_right = separators.arrow_thin_right
 
   local bg = config.ui.theme.bg_color
   local fg = config.ui.theme.fg_color
