@@ -1,5 +1,6 @@
 ---@class WeztermUiConfig
 ---@field separators SeparatorConfig Visual separators used in the status bar
+---@field theme? TabBarColor Theme for the status bar
 
 ---@class SeparatorConfig
 ---@field arrow_solid_left string Unicode character for solid left arrow
