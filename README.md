@@ -206,6 +206,16 @@ Available text attributes:
 
 Open issues or submit pull requests with improvements.
 
+# Type Annotations
+
+Installing [Wezterm Types](https://github.com/DrKJeff16/wezterm-types), You will unlock
+import type annotations for this project as shown below:
+
+```lua
+---@type WeztermTabs
+local tabs = wezterm.plugin.require("https://github.com/yriveiro/wezterm-tabs")
+```
+
 # License
 
 MIT License
