@@ -213,7 +213,7 @@ import type annotations for this project as shown below:
 
 ```lua
 ---@type WeztermTabs
-local tabs = wezterm.plugin.require("https://github.com/yriveiro/wezterm-tabs")
+local tabs = wezterm.plugin.require("https://github.com/yriveiro/wezterm-status")
 ```
 
 # License
